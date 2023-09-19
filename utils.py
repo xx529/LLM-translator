@@ -1,4 +1,6 @@
 import loguru
+import langdetect
+from enum import Enum
 
 
 class Log:
@@ -27,3 +29,17 @@ class Log:
     @classmethod
     def exception(cls, msg):
         cls.log.exception(msg)
+
+
+class LanguageChecker:
+
+    @staticmethod
+    def detect(text):
+        lang = langdetect.detect(text)
+        Log.info(f"Detected language: {lang}")
+        return lang
+
+
+class Language(Enum):
+    Chinese = 'zh-cn'
+    English = 'en'

@@ -2,8 +2,9 @@ import os
 import streamlit as st
 from model import ZhiPuAIModel
 from prompt import TranslatePrompt
+from utils import LanguageChecker, Language
 
-m = ZhiPuAIModel(os.getenv('ZHIPUAI_API_KEY'), os.getenv('ZHIPUAI_MODEL'))
+chat_model = ZhiPuAIModel(os.getenv('ZHIPUAI_API_KEY'), os.getenv('ZHIPUAI_MODEL'))
 
 
 def run():
@@ -13,7 +14,10 @@ def run():
 
     prompt = TranslatePrompt.prompt('中文', '英文', content)
 
-    with st.spinner('正在翻译中...'):
-        result = m.chat(prompt)
+    if LanguageChecker.detect(prompt) != Language.Chinese.value:
+        result = '您输入的不是中文，请重新输入！'
+    else:
+        with st.spinner('正在翻译中...'):
+            result = chat_model.chat(prompt)
 
     st.markdown(result)
