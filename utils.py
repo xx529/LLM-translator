@@ -1,6 +1,9 @@
 import loguru
 import langdetect
 from enum import Enum
+from langdetect import DetectorFactory
+
+DetectorFactory.seed = 0
 
 
 class Log:
@@ -35,9 +38,9 @@ class LanguageChecker:
 
     @staticmethod
     def detect(text):
-        lang = langdetect.detect(text)
+        lang = langdetect.detect_langs(text)
         Log.info(f"Detected language: {lang}")
-        return lang
+        return lang[0].lang
 
 
 class Language(Enum):
