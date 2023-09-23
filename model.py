@@ -1,16 +1,25 @@
-class Model:
-    def chat(self, prompt):
-        raise NotImplementedError("Subclasses should implement this!")
+from typing import Any, List, Mapping, Optional
+
+import zhipuai
+from langchain.callbacks.manager import CallbackManagerForLLMRun
+from langchain.llms.base import LLM
 
 
-class ZhiPuAIModel(Model):
+class ZhiPuLLM(LLM):
+    api_key: str
+    model: str
 
-    def __init__(self, api_key, model):
-        self.api_key = api_key
-        self.model = model
+    @property
+    def _llm_type(self) -> str:
+        return "custom"
 
-    def chat(self, prompt):
-        import zhipuai
+    def _call(self,
+              prompt: str,
+              stop: Optional[List[str]] = None,
+              run_manager: Optional[CallbackManagerForLLMRun] = None,
+              **kwargs: Any) -> str:
+        if stop is not None:
+            raise ValueError("stop kwargs are not permitted.")
         zhipuai.api_key = self.api_key
         response = zhipuai.model_api.invoke(
             model=self.model,
@@ -20,3 +29,8 @@ class ZhiPuAIModel(Model):
         )
         c = response['data']['choices'][0]['content']
         return c
+
+    @property
+    def _identifying_params(self) -> Mapping[str, Any]:
+        """Get the identifying parameters."""
+        return {'api_key': self.api_key, 'model': self.model}
