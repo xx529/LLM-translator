@@ -54,3 +54,7 @@ class ZhiPuLLM(LLM):
 class Model(Enum):
     ZHIPU = ZhiPuLLM(api_key=os.getenv('ZHIPUAI_API_KEY'), model=os.getenv('ZHIPUAI_MODEL'))
     FAKER = Faker()
+
+    @classmethod
+    def list(cls):
+        return [m.name for m in cls]

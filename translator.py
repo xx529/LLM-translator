@@ -11,13 +11,23 @@ class Translator:
 
     def __call__(self, dst_lang, content):
         Log.info(f'using model "{self.model_name}"')
-        p = PromptTemplate.from_template(self.prompt_general()).format(dst_lang=dst_lang, content=content)
+
+        p = PromptTemplate.from_template(self.get_template()).format(dst_lang=dst_lang, content=content)
         Log.info(f'prompt: {p}')
-        return self.llm(p)
+
+        res = self.llm(p)
+        Log.info(f'response: {res}')
+        return res
+
+    def get_template(self):
+        template_func = getattr(self, f'template_{self.model_name.lower()}', self.template_default)
+        Log.info(f'using template "{template_func.__name__}"')
+        return template_func()
 
     @staticmethod
-    def prompt_general():
-        return '现在你是一个翻译专家，根据给出的原文，给出对应的{dst_lang}翻译，原文: {content}，翻译: '
+    def template_default():
+        return '原文: {content}，请翻译成{dst_lang}: '
 
-    def prompt_zhipu(self):
-        return self.prompt_general()
+    @staticmethod
+    def template_zhipu():
+        return '现在你是一个翻译专家，根据给出的原文，给出对应的{dst_lang}翻译，原文: {content}，翻译: '
