@@ -2,6 +2,7 @@ import streamlit as st
 from models import Model
 from translator import Translator
 from utils import Language, Log
+import streamlit_authenticator as sta
 
 
 def run():
