@@ -1,5 +1,6 @@
 import loguru
 from enum import Enum
+import yaml
 
 
 class Log:
@@ -30,9 +31,17 @@ class Log:
         cls.log.exception(msg)
 
 
+class FileReader:
+
+    @staticmethod
+    def read_yaml(path):
+        with open(path, 'r', encoding='utf-8') as f:
+            return yaml.load(f, Loader=yaml.FullLoader)
+
+
 class Language(Enum):
-    Chinese = '中文'
     English = '英语'
+    Chinese = '中文'
     Korean = '韩语'
     Russian = '俄语'
     Cantonese = '粤语'

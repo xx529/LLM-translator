@@ -51,9 +51,33 @@ class ZhiPuLLM(LLM):
         return {'api_key': self.api_key, 'model': self.model}
 
 
+class ChatGLM2(LLM):
+    host: str
+    port: str
+
+    @property
+    def _llm_type(self) -> str:
+        return "custom"
+
+    def _call(self,
+              prompt: str,
+              stop: Optional[List[str]] = None,
+              run_manager: Optional[CallbackManagerForLLMRun] = None,
+              **kwargs: Any) -> str:
+        if stop is not None:
+            raise ValueError("stop kwargs are not permitted.")
+        return 'not implemented yet.'
+
+    @property
+    def _identifying_params(self) -> Mapping[str, Any]:
+        """Get the identifying parameters."""
+        return {'host': self.host, 'port': self.port}
+
+
 class Model(Enum):
-    ZHIPU = ZhiPuLLM(api_key=os.getenv('ZHIPUAI_API_KEY'), model=os.getenv('ZHIPUAI_MODEL'))
-    FAKER = Faker()
+    ZhiPu = ZhiPuLLM(api_key=os.getenv('ZHIPUAI_API_KEY', ''), model=os.getenv('ZHIPUAI_MODEL', ''))
+    ChatGLM_2 = ChatGLM2(host=os.getenv('glm2_host', ''), port=os.getenv('glm2_port', ''))
+    Faker = Faker()
 
     @classmethod
     def list(cls):

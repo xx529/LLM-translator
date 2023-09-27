@@ -1,0 +1,17 @@
+credentials:
+  usernames:
+    admin:
+      email: 575506806@qq.com
+      name: admin
+      password: $2b$12$2DNSa19QDelbylhJkPydpeArWfAmKYwB7fLfzzyIcy2gMXXsZlJuC  # 'abc'
+    admin1:
+      email: 575506806@qq.com
+      name: admin1
+      password: $2b$12$2DNSa19QDelbylhJkPydpeArWfAmKYwB7fLfzzyIcy2gMXXsZlJuC  # 'abc'
+cookie:
+  expiry_days: 30
+  key: some_signature_key # Must be string
+  name: some_cookie_name
+preauthorized:
+  emails:
+  - melsby@gmail.com
