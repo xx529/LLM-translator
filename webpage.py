@@ -8,6 +8,7 @@ import streamlit_authenticator as stauth
 def run():
     set_st()
     # user_login()
+
     run_app('test')
 
 
@@ -68,7 +69,6 @@ def run_app(user_name):
         app_chatroom()
 
 
-
 def sider_bar():
     params = {}
 
@@ -78,15 +78,15 @@ def sider_bar():
         st.markdown('### Model')
         params['model_name'] = st.selectbox('选择模型', Model.list(), label_visibility='collapsed')
 
-        # st.markdown('### Parameters')
-        # e1 = st.expander('Temperature')
-        # params['temp'] = e1.slider('Temperature', max_value=1.0, min_value=0.0, value=0.8, label_visibility='collapsed')
-        #
-        # e2 = st.expander('Top K')
-        # params['top_k'] = e2.slider('Top_K', max_value=100, min_value=0, value=20, label_visibility='collapsed')
-        #
-        # e3 = st.expander('Top P')
-        # params['top_p'] = e3.slider('Top_P', max_value=1.0, min_value=0.0, value=0.75, label_visibility='collapsed')
+        st.markdown('### Parameters')
+        e1 = st.expander('Temperature')
+        params['temp'] = e1.slider('Temperature', max_value=1.0, min_value=0.0, value=0.8, label_visibility='collapsed')
+
+        e2 = st.expander('Top K')
+        params['top_k'] = e2.slider('Top_K', max_value=100, min_value=0, value=20, label_visibility='collapsed')
+
+        e3 = st.expander('Top P')
+        params['top_p'] = e3.slider('Top_P', max_value=1.0, min_value=0.0, value=0.75, label_visibility='collapsed')
 
     return params
 
@@ -100,13 +100,10 @@ def app_translation(model_name):
     content = src_col.text_area('translation-content', placeholder='输入需要翻译的文本', height=250, label_visibility='collapsed')
     Log.info(f'content: {content}')
 
-    if not content:
-        result = ''
-    else:
+    if content:
         translator = Translator(model_name=model_name)
         result = translator(dst_lang=dst_lang, content=content)
-
-    dst_col.text_area('translation', value=result, height=250, label_visibility='collapsed')
+        dst_col.text_area('translation', value=result, height=250, label_visibility='collapsed')
 
 
 def app_summary(model_name):
@@ -143,3 +140,4 @@ def app_extraction():
 
 def app_chatroom():
     st.caption('waiting for development...')
+
