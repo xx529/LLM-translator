@@ -135,7 +135,7 @@ def app_readme(user_name):
 def app_extraction():
     st.text_area('extraction-content', placeholder='copy your content here', height=250, label_visibility='collapsed')
     # st.
-    data = {'col1': [1, 2], 'col2': [3, 4]}
+    # data = {'col1': [1, 2], 'col2': [3, 4]}
 
 
 def app_chatroom():
