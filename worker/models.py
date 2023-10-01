@@ -23,6 +23,8 @@ class Faker(LLM):
 class ZhiPuLLM(LLM):
     model: str
     api_key: str
+    default_temperature: float = 0.9
+    default_top_k: float = 10
 
     @property
     def _llm_type(self) -> str:
@@ -33,14 +35,18 @@ class ZhiPuLLM(LLM):
               stop: Optional[List[str]] = None,
               run_manager: Optional[CallbackManagerForLLMRun] = None,
               **kwargs: Any) -> str:
+
         if stop is not None:
             raise ValueError("stop kwargs are not permitted.")
+
         zhipuai.api_key = self.api_key
         response = zhipuai.model_api.invoke(
             model=self.model,
             prompt=[
                 {"role": "user", "content": prompt},
-            ]
+            ],
+            temperature=kwargs.get('temperature', self.default_temperature),
+            top_k=kwargs.get('top_k', self.default_top_k)
         )
         c = response['data']['choices'][0]['content']
         return c

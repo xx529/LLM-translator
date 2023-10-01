@@ -1,8 +1,8 @@
 import streamlit as st
-from models import Model
-from workers import Translator, Summarizer
-from utils import Language, Log, FileReader
-import streamlit_authenticator as stauth
+from worker.models import Model
+from worker.workers import Translator, Summarizer
+from utils.tools import Log
+from utils.types import Language, ModelConf
 
 
 def run():
@@ -47,17 +47,17 @@ def login_status():
 def run_app(user_name):
 
     st.header(f'Hello "{user_name}"!')
-    params = sider_bar()
+    conf = sider_bar()
     tabs = st.tabs(['Readme', 'Translation', 'Summary', 'Extraction', 'KnowledgeQA', 'ChatRoom'])
 
     with tabs[0]:
         app_readme(user_name=user_name)
 
     with tabs[1]:
-        app_translation(model_name=params['model_name'])
+        app_translation(conf=conf)
 
     with tabs[2]:
-        app_summary(model_name=params['model_name'])
+        app_summary(conf=conf)
 
     with tabs[3]:
         app_extraction()
@@ -69,29 +69,41 @@ def run_app(user_name):
         app_chatroom()
 
 
-def sider_bar():
-    params = {}
+def sider_bar() -> ModelConf:
 
     with st.sidebar:
         st.markdown('## Configurations')
 
         st.markdown('### Model')
-        params['model_name'] = st.selectbox('选择模型', Model.list(), label_visibility='collapsed')
+        model_name = st.selectbox('选择模型', Model.list(), label_visibility='collapsed')
+        llm_model = Model[model_name].value
+
+        conf = ModelConf(llm_model=Model[model_name].value)
 
         st.markdown('### Parameters')
-        e1 = st.expander('Temperature')
-        params['temp'] = e1.slider('Temperature', max_value=1.0, min_value=0.0, value=0.8, label_visibility='collapsed')
 
-        e2 = st.expander('Top K')
-        params['top_k'] = e2.slider('Top_K', max_value=100, min_value=0, value=20, label_visibility='collapsed')
+        if hasattr(llm_model, 'default_temperature'):
+            e1 = st.expander('Temperature')
+            conf.temperature = e1.slider(label='Temperature',
+                                         value=llm_model.default_temperature,
+                                         max_value=1.0, min_value=0.0, label_visibility='collapsed')
 
-        e3 = st.expander('Top P')
-        params['top_p'] = e3.slider('Top_P', max_value=1.0, min_value=0.0, value=0.75, label_visibility='collapsed')
+        if hasattr(llm_model, 'default_top_k'):
+            e2 = st.expander('Top K')
+            conf.top_k = e2.slider(label='Top_K',
+                                   value=llm_model.default_top_k,
+                                   max_value=50, min_value=0, label_visibility='collapsed')
 
-    return params
+        if hasattr(llm_model, 'default_top_p'):
+            e3 = st.expander('Top P')
+            conf.top_p = e3.slider(label='Top_P',
+                                   value=llm_model.default_top_p,
+                                   max_value=1.0, min_value=0.0, label_visibility='collapsed')
+
+    return conf
 
 
-def app_translation(model_name):
+def app_translation(conf: ModelConf):
 
     dst_lang = st.selectbox('目标语言', Language.list())
     Log.info(f'dst_lang: {dst_lang}')
@@ -101,19 +113,27 @@ def app_translation(model_name):
     Log.info(f'content: {content}')
 
     if content:
-        translator = Translator(model_name=model_name)
+        translator = Translator(llm_model=conf.llm_model,
+                                temperature=conf.temperature,
+                                top_k=conf.top_k,
+                                top_p=conf.top_p)
+
         result = translator(dst_lang=dst_lang, content=content)
         dst_col.text_area('translation', value=result, height=250, label_visibility='collapsed')
 
 
-def app_summary(model_name):
+def app_summary(conf: ModelConf):
     st.markdown('摘要文字长度')
     length = st.slider('summary-length', min_value=100, max_value=300, value=150, label_visibility='collapsed')
     Log.info(f'length: {length}')
 
     content = st.text_area('summary-content', placeholder='copy your content here', height=250, label_visibility='collapsed')
     if content:
-        summarizer = Summarizer(model_name=model_name)
+        summarizer = Summarizer(llm_model=conf.llm_model,
+                                temperature=conf.temperature,
+                                top_k=conf.top_k,
+                                top_p=conf.top_p)
+
         with st.spinner('摘要生成中......'):
             result = summarizer(content=content, length=length)
             st.caption('摘要如下：')

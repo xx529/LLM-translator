@@ -1,5 +1,4 @@
 import loguru
-from enum import Enum
 import yaml
 
 
@@ -37,19 +36,3 @@ class FileReader:
     def read_yaml(path):
         with open(path, 'r', encoding='utf-8') as f:
             return yaml.load(f, Loader=yaml.FullLoader)
-
-
-class Language(Enum):
-    English = '英语'
-    Chinese = '中文'
-    Korean = '韩语'
-    Russian = '俄语'
-    Cantonese = '粤语'
-    French = '法语'
-    Japanese = '日语'
-    Spanish = '西班牙语'
-    Portuguese = '葡萄牙语'
-
-    @classmethod
-    def list(cls):
-        return [lang.value for lang in cls]

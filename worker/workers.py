@@ -1,20 +1,26 @@
-from models import Model
-from utils import Log
+from worker.models import Model
+from utils.tools import Log
 from langchain import PromptTemplate
 
 
 class Worker:
-    def __init__(self, model_name):
-        self.model_name = model_name
-        self.llm = Model[model_name].value
+    def __init__(self, llm_model, temperature=None, top_k=None, top_p=None):
+        self.llm = llm_model
+        self.temperature = temperature
+        self.top_k = top_k
+        self.top_p = top_p
+        self.model_name = Model(self.llm).name
 
     def __call__(self, **kwargs):
         Log.info(f'using model "{self.model_name}"')
+        Log.info(f'temperature: {self.temperature}')
+        Log.info(f'top_k: {self.top_k}')
+        Log.info(f'top_p: {self.top_p}')
 
         p = PromptTemplate.from_template(self.get_template()).format(**kwargs)
         Log.info(f'prompt: {p}')
 
-        res = self.llm(p)
+        res = self.llm(p, temperature=self.temperature, top_k=self.top_k, top_p=self.top_p)
         Log.info(f'response: {res}')
         return res
 
@@ -29,8 +35,8 @@ class Worker:
 
 class Translator(Worker):
 
-    def __init__(self, model_name):
-        super().__init__(model_name)
+    def __init__(self, llm_model, temperature=None, top_k=None, top_p=None):
+        super().__init__(llm_model, temperature, top_k, top_p)
 
     def template_default(self):
         return '原文: {content}，请翻译成{dst_lang}: '
@@ -42,8 +48,8 @@ class Translator(Worker):
 
 class Summarizer(Worker):
 
-    def __init__(self, model_name):
-        super().__init__(model_name)
+    def __init__(self, llm_model, temperature=None, top_k=None, top_p=None):
+        super().__init__(llm_model, temperature, top_k, top_p)
 
     def template_default(self):
         return '用{length}个左右的文字为已下内容提取摘要: {content}，摘要：'
