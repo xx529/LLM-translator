@@ -21,8 +21,8 @@ class Faker(LLM):
 
 
 class ZhiPuLLM(LLM):
-    api_key: str
     model: str
+    api_key: str
 
     @property
     def _llm_type(self) -> str:
