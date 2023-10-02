@@ -110,7 +110,11 @@ def app_translation(conf: ModelConf):
     Log.info(f'dst_lang: {dst_lang}')
 
     src_col, dst_col = st.columns(2)
-    content = src_col.text_area('translation-content', placeholder='输入需要翻译的文本', height=250, label_visibility='collapsed')
+    content = src_col.text_area('translation-content',
+                                placeholder='输入需要翻译的文本',
+                                height=250,
+                                label_visibility='collapsed')
+
     Log.info(f'content: {content}')
 
     if content:
