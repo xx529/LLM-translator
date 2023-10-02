@@ -1,5 +1,5 @@
-from worker.models import Model
-from utils.tools import Log
+from src.worker.models import Model
+from src.utils.tools import Log
 from langchain import PromptTemplate
 
 
@@ -21,6 +21,7 @@ class Worker:
         Log.info(f'prompt: {p}')
 
         res = self.llm(p, temperature=self.temperature, top_k=self.top_k, top_p=self.top_p)
+        res = self.post_process(res)
         Log.info(f'response: {res}')
         return res
 
@@ -28,6 +29,9 @@ class Worker:
         template_func = getattr(self, f'template_{self.model_name.lower()}', self.template_default)
         Log.info(f'using template "{template_func.__name__}"')
         return template_func()
+
+    def post_process(self, res):
+        return res
 
     def template_default(self):
         raise NotImplementedError
@@ -53,3 +57,15 @@ class Summarizer(Worker):
 
     def template_default(self):
         return '用{length}个左右的文字为已下内容提取摘要: {content}，摘要：'
+
+
+class Extractor(Worker):
+
+    def __init__(self, llm_model, temperature=None, top_k=None, top_p=None):
+        super().__init__(llm_model, temperature, top_k, top_p)
+
+    def template_default(self):
+        return '提取以下文本中的所有人名，并以逗号分割的形式返回结果，文本：{content}'
+
+    def post_process(self, res):
+        return res.split('，')

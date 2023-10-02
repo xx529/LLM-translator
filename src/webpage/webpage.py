@@ -1,8 +1,9 @@
+import pandas as pd
 import streamlit as st
-from worker.models import Model
-from worker.workers import Translator, Summarizer
-from utils.tools import Log
-from utils.types import Language, ModelConf
+from src.worker.models import Model
+from src.worker.workers import Translator, Summarizer, Extractor
+from src.utils.tools import Log
+from src.utils.types import Language, ModelConf
 
 
 def run():
@@ -60,7 +61,7 @@ def run_app(user_name):
         app_summary(conf=conf)
 
     with tabs[3]:
-        app_extraction()
+        app_extraction(conf=conf)
 
     with tabs[4]:
         app_knowledge_qa()
@@ -105,7 +106,7 @@ def sider_bar() -> ModelConf:
 
 def app_translation(conf: ModelConf):
 
-    dst_lang = st.selectbox('目标语言', Language.list())
+    dst_lang = st.selectbox('Translate To', Language.list())
     Log.info(f'dst_lang: {dst_lang}')
 
     src_col, dst_col = st.columns(2)
@@ -127,8 +128,12 @@ def app_summary(conf: ModelConf):
     length = st.slider('summary-length', min_value=100, max_value=300, value=150, label_visibility='collapsed')
     Log.info(f'length: {length}')
 
-    content = st.text_area('summary-content', placeholder='copy your content here', height=250, label_visibility='collapsed')
-    if content:
+    content = st.text_area('summary-content',
+                           placeholder='copy your content here',
+                           height=250,
+                           label_visibility='collapsed')
+
+    if st.button('点击生成摘要', use_container_width=True):
         summarizer = Summarizer(llm_model=conf.llm_model,
                                 temperature=conf.temperature,
                                 top_k=conf.top_k,
@@ -136,9 +141,25 @@ def app_summary(conf: ModelConf):
 
         with st.spinner('摘要生成中......'):
             result = summarizer(content=content, length=length)
-            st.caption('摘要如下：')
             Log.info(f'result length: {len(result)}')
             st.text_area('summary-result', value=result, label_visibility='collapsed', height=200)
+
+
+def app_extraction(conf: ModelConf):
+    content = st.text_area('extraction-content',
+                           placeholder='copy your content here',
+                           height=250,
+                           label_visibility='collapsed')
+
+    if st.button('点击提取信息', use_container_width=True):
+        extractor = Extractor(llm_model=conf.llm_model,
+                              temperature=conf.temperature,
+                              top_k=conf.top_k,
+                              top_p=conf.top_p)
+
+        result = extractor(content=content)
+
+        st.dataframe(pd.DataFrame(result))
 
 
 def app_knowledge_qa():
@@ -150,12 +171,6 @@ def app_knowledge_qa():
 def app_readme(user_name):
     st.markdown(f'Hello "{user_name}"!')
     st.markdown('Thanks for using this app!')
-
-
-def app_extraction():
-    st.text_area('extraction-content', placeholder='copy your content here', height=250, label_visibility='collapsed')
-    # st.
-    # data = {'col1': [1, 2], 'col2': [3, 4]}
 
 
 def app_chatroom():

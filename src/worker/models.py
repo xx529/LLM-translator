@@ -82,7 +82,7 @@ class ChatGLM2(LLM):
 
 class Model(Enum):
     ZhiPu = ZhiPuLLM(api_key=os.getenv('ZHIPUAI_API_KEY', ''), model=os.getenv('ZHIPUAI_MODEL', ''))
-    ChatGLM_2 = ChatGLM2(host=os.getenv('glm2_host', ''), port=os.getenv('glm2_port', ''))
+    ChatGLM_2 = ChatGLM2(host=os.getenv('GLM2_HOST', ''), port=os.getenv('GLM2_PORT', ''))
     Faker = Faker()
 
     @classmethod
