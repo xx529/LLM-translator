@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 import streamlit as st
 from src.worker.models import Model
 from src.worker.workers import Translator, Summarizer, Extractor
@@ -15,6 +16,7 @@ def run():
 
 def set_st():
     st.set_page_config(layout="wide")
+
 
 #
 # def user_login():
@@ -46,7 +48,6 @@ def login_status():
 
 
 def run_app(user_name):
-
     st.header(f'Hello "{user_name}"!')
     conf = sider_bar()
     tabs = st.tabs(['Readme', 'Translation', 'Summary', 'Extraction', 'KnowledgeQA', 'ChatRoom'])
@@ -71,7 +72,6 @@ def run_app(user_name):
 
 
 def sider_bar() -> ModelConf:
-
     with st.sidebar:
         st.markdown('## Configurations')
 
@@ -105,7 +105,6 @@ def sider_bar() -> ModelConf:
 
 
 def app_translation(conf: ModelConf):
-
     dst_lang = st.selectbox('Translate To', Language.list())
     Log.info(f'dst_lang: {dst_lang}')
 
@@ -161,9 +160,27 @@ def app_extraction(conf: ModelConf):
                               top_k=conf.top_k,
                               top_p=conf.top_p)
 
-        result = extractor(content=content)
+        with st.spinner('信息提取中......'):
+            result = extractor(content=content)
 
-        st.dataframe(pd.DataFrame(result))
+        print(result)
+
+        tabs = st.tabs(['text', 'json', 'table'])
+
+        with tabs[0]:
+            st.text(result)
+        with tabs[1]:
+            try:
+                r = json.loads(result)
+                st.json(r)
+            except Exception as _:
+                st.markdown('解析失败')
+        with tabs[2]:
+            try:
+                df = pd.DataFrame(json.loads(result))
+                st.dataframe(df)
+            except Exception as _:
+                st.markdown('解析失败')
 
 
 def app_knowledge_qa():
@@ -179,3 +196,5 @@ def app_readme(user_name):
 
 def app_chatroom():
     st.caption('waiting for development...')
+
+

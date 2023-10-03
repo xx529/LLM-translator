@@ -1,3 +1,5 @@
+import json
+
 from src.worker.models import Model
 from src.utils.tools import Log
 from langchain import PromptTemplate
@@ -21,7 +23,8 @@ class Worker:
         Log.info(f'prompt: {p}')
 
         res = self.llm(p, temperature=self.temperature, top_k=self.top_k, top_p=self.top_p)
-        res = self.post_process(res)
+        res = self.clean_process(res)
+        res = self.custom_process(res)
         Log.info(f'response: {res}')
         return res
 
@@ -30,7 +33,18 @@ class Worker:
         Log.info(f'using template "{template_func.__name__}"')
         return template_func()
 
-    def post_process(self, res):
+    def clean_process(self, res: str):
+        res = res.replace('\\n', '')
+
+        if res.startswith('"'):
+            res = res[1:]
+        if res.endswith('"'):
+            res = res[:-1]
+
+        res = res.strip()
+        return res
+
+    def custom_process(self, res: str):
         return res
 
     def template_default(self):
@@ -65,7 +79,17 @@ class Extractor(Worker):
         super().__init__(llm_model, temperature, top_k, top_p)
 
     def template_default(self):
-        return '提取以下文本中的所有人名，并以逗号分割的形式返回结果，文本：{content}'
+        t = """
+        提取以下文本中的人名，并以提供的json格式返回结果。
+        
+        文本如下：
+        ```text
+        {content}
+        ```
 
-    def post_process(self, res):
-        return res.split('，')
+        提取结果json是：
+        """
+        return t
+
+    def clean_process(self, res):
+        return res
