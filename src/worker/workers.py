@@ -1,5 +1,3 @@
-import json
-
 from src.worker.models import Model
 from src.utils.tools import Log
 from langchain import PromptTemplate
