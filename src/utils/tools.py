@@ -32,6 +32,13 @@ class Log:
 
 class FileReader:
 
+    @classmethod
+    def read(cls, path: str):
+        if path.endswith('.yaml') or path.endswith('yml'):
+            return cls.read_yaml(path)
+        else:
+            raise Exception('None supported file type')
+
     @staticmethod
     def read_yaml(path):
         with open(path, 'r', encoding='utf-8') as f:
